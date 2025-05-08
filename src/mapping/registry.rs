@@ -5,7 +5,7 @@ use std::sync::OnceLock;
 
 type MappingRegistry = HashMap<TypeId, TableInfo>;
 
-static MAPPING_REGISTRY: OnceLock<MappingRegistry> = OnceLock::new();
+pub static MAPPING_REGISTRY: OnceLock<MappingRegistry> = OnceLock::new();
 
 #[derive(Debug)]
 pub struct TableInfo {

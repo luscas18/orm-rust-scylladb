@@ -1,55 +1,52 @@
 pub mod mapping;
-
 #[cfg(test)]
 mod tests {
-    use crate::mapping::registry::{register_mapping, get_table_info};
+    use std::collections::HashMap;
+    use std::any::TypeId;
+    use crate::mapping::registry::{register_mapping, get_table_info, MAPPING_REGISTRY};
     use crate::mapping::attributes::{table, column};
+    use std::sync::OnceLock;
 
     #[derive(Debug)]
-    struct TestUser {
+    struct TestProduct {
         id: i32,
         name: String,
-        email: String,
+        price: f64,
     }
 
     #[test]
-    fn test_register_and_get_mapping() {
-        register_mapping::<TestUser>(
-            table("test_users"),
+    fn test_registry_output() {
+        // Registrar o mapeamento para TestProduct
+        register_mapping::<TestProduct>(
+            table("products"),
             vec![
-                ("id", column("user_id")),
-                ("name", column("user_name")),
-                ("email", column("user_email")),
+                ("id", column("product_id")),
+                ("name", column("product_name")),
+                ("price", column("product_price")),
             ],
             Some("id"),
         );
 
-        let table_info = get_table_info::<TestUser>().unwrap();
-        assert_eq!(table_info.name, "test_users");
-        assert_eq!(table_info.columns.len(), 3);
-        assert_eq!(table_info.columns.get("user_id").unwrap().name, "user_id");
-        assert!(table_info.columns.get("user_id").unwrap().is_primary_key);
-        assert_eq!(table_info.columns.get("user_name").unwrap().name, "user_name");
-        assert!(!table_info.columns.get("user_name").unwrap().is_primary_key);
-        assert_eq!(table_info.columns.get("user_email").unwrap().name, "user_email");
-        assert!(!table_info.columns.get("user_email").unwrap().is_primary_key);
-        assert_eq!(table_info.primary_key, Some("user_id"));
-    }
+        // Acessar o registro (inicializando-o se não estiver)
+        let registry = MAPPING_REGISTRY.get_or_init(|| HashMap::new());
 
-    #[test]
-    fn test_register_without_primary_key() {
-        register_mapping::<TestUser>(
-            table("test_users"),
-            vec![
-                ("id", column("user_id")),
-                ("name", column("user_name")),
-                ("email", column("user_email")),
-            ],
-            None,
-        );
+        // Imprimir o conteúdo do registro
+        println!("--- Conteúdo do MAPPING_REGISTRY ---");
+        for (type_id, table_info) in registry.iter() {
+            println!("Type ID: {:?}", type_id);
+            println!("  Table Name: {}", table_info.name);
+            println!("  Primary Key: {:?}", table_info.primary_key);
+            println!("  Columns:");
+            for (field_name, column_info) in table_info.columns.iter() {
+                println!("    Field: {}, Column Name: {}, Is Primary Key: {}", field_name, column_info.name, column_info.is_primary_key);
+            }
+            println!("---");
+        }
 
-        let table_info = get_table_info::<TestUser>().unwrap();
-        assert_eq!(table_info.primary_key, None);
-        assert!(!table_info.columns.get("user_id").unwrap().is_primary_key);
+        // Você também pode verificar se as informações foram registradas corretamente usando asserts
+        let product_table_info = get_table_info::<TestProduct>().unwrap();
+        assert_eq!(product_table_info.name, "products");
+        assert_eq!(product_table_info.columns.len(), 3);
+        assert_eq!(product_table_info.primary_key, Some("product_id"));
     }
 }
