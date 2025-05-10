@@ -1,65 +1,35 @@
-mod mapping; // Garante que o módulo mapping seja compilado
+mod db;
+mod model;
+mod result;
 
-use mapping::attributes::{column, table};
-use mapping::registry::{MAPPING_REGISTRY, get_table_info, register_mapping};
-use std::collections::HashMap;
+use db::{add_book, create_session, initialize, select_book};
+use model::{Book, SelectBook};
+use tokio::select;
+use uuid::Uuid;
+use crate::result::Result;
 
-#[derive(Debug)]
-struct TestProduct {
-    id: i32,
-    name: String,
-    price: f64,
-}
+#[tokio::main]
+async fn main() -> Result<()> {
+    let uri = "127.0.0.1:9042";
+    let session = create_session(&uri).await?;
+    initialize(&session).await;
+    println!("Conectado");
 
-fn main() {
-    println!("--- Iniciando registro na main ---");
+    let key = Uuid::new_v4();
+    let book = Book {
+        id: key.clone(),
+        name: String::from("Teste"),
+        description:  String::from("Teste"),
+        price: 1000.0,
+        quantity: 100,
+    };
 
-    // Registrar o mapeamento para TestProduct
-    register_mapping::<TestProduct>(
-        table("products_from_main"),
-        vec![
-            ("id", column("product_id")),
-            ("name", column("product_name")),
-            ("price", column("product_price")),
-        ],
-        Some("id"),
-    );
+    add_book(&session, book).await.unwrap();
+    let select= SelectBook{
+        id:key.clone()
+    };
+    let result = select_book(&session, select).await.unwrap();
+    println!("Resultado: {:?}", result);
 
-    println!("--- Registro concluído na main ---");
-
-    // Tentar acessar o registro e imprimir seu conteúdo
-    println!("--- Conteúdo do MAPPING_REGISTRY na main ---");
-    let registry = MAPPING_REGISTRY.get();
-    match registry {
-        Some(reg) => {
-            for (type_id, table_info) in reg.iter() {
-                println!("Type ID: {:?}", type_id);
-                println!("  Table Name: {}", table_info.name);
-                println!("  Primary Key: {:?}", table_info.primary_key);
-                println!("  Columns:");
-                for (field_name, column_info) in table_info.columns.iter() {
-                    println!(
-                        "    Field: {}, Column Name: {}, Is Primary Key: {}",
-                        field_name, column_info.name, column_info.is_primary_key
-                    );
-                }
-                println!("---");
-            }
-        }
-        None => {
-            println!("O MAPPING_REGISTRY não foi inicializado.");
-        }
-    }
-
-    // Tentar obter informações de tabela
-    println!("--- Tentando obter TableInfo na main ---");
-    match get_table_info::<TestProduct>() {
-        Some(info) => {
-            println!("Table Info para TestProduct na main: {:?}", info);
-        }
-        None => {
-            println!("Não foi possível obter TableInfo para TestProduct na main.");
-        }
-    }
-    println!("Hello, world from main!");
+    Ok(())
 }

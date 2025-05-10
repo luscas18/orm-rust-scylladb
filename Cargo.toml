@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-scylla = "0.15"
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+scylla = "0.13"
+tokio = { version = "1", features = ["full"] }
 async-trait = "0.1"
+uuid = { version = "1.10.0", features = ["v4"] }
+orm_macros = { path = "./orm_macros" }
+
+[dev-dependencies]
+proc-macro2 = "1.0"
