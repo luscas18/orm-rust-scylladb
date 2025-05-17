@@ -4,10 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-scylla = "1.0"
+scylla = "0.12"
 tokio = { version = "1", features = ["full"] }
 async-trait = "0.1"
 uuid = { version = "1.10.0", features = ["v4"] }
 orm_macro = { path = "./orm_macro" }
+anyhow = "1.0"
 [dev-dependencies]
 proc-macro2 = "1.0"
+anyhow = "1.0"

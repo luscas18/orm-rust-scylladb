@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::any::TypeId;
-use crate::mapping::attributes::{Table, Column};
+use crate::mapping::attributes::{TABLE, COLUMN};
 use std::sync::OnceLock;
 
 type MappingRegistry = HashMap<TypeId, TableInfo>;
@@ -34,9 +34,9 @@ pub fn get_mapping_registry() -> &'static MappingRegistry {
     MAPPING_REGISTRY.get_or_init(|| HashMap::new())
 }
 
-pub fn register_mapping<T: 'static>(table: Table, columns: Vec<(&'static str, Column)>, primary_key: Option<&'static str>) {
+pub fn register_mapping<T: 'static>(table: TABLE, columns: Vec<(&'static str, COLUMN)>, primary_key: Option<&'static str>) {
     let type_id = TypeId::of::<T>();
-    let registry = get_mapping_registry();
+    let _registry = get_mapping_registry();
     let mut table_info = TableInfo::new(table.name);
 
     for (field_name, col) in columns {
@@ -51,7 +51,7 @@ pub fn register_mapping<T: 'static>(table: Table, columns: Vec<(&'static str, Co
     // Obtain a mutable reference to the OnceLock's value (only safe because it's initialized once)
     let registry_mut = MAPPING_REGISTRY.get_or_init(|| HashMap::new());
     unsafe {
-        let mut_ref = (registry_mut as *const HashMap<TypeId, TableInfo> as *mut HashMap<TypeId, TableInfo>);
+        let mut_ref = registry_mut as *const HashMap<TypeId, TableInfo> as *mut HashMap<TypeId, TableInfo>;
         (*mut_ref).insert(type_id, table_info);
     }
 }

@@ -1,10 +1,10 @@
 #[derive(Debug, Clone, Copy)]
-pub struct Table {
+pub struct TABLE {
     pub name: &'static str,
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Column {
+pub struct COLUMN {
     pub name: &'static str,
 }
 
@@ -12,6 +12,6 @@ pub struct Column {
 pub struct PrimaryKey {}
 
 // "Construtores" simples para usar como atributos
-pub const table: fn(&'static str) -> Table = |name| Table { name };
-pub const column: fn(&'static str) -> Column = |name| Column { name };
-pub const primary_key: fn() -> PrimaryKey = || PrimaryKey {};
+pub const TABLE: fn(&'static str) -> TABLE = |name| TABLE { name };
+pub const COLUMN: fn(&'static str) -> COLUMN = |name| COLUMN { name };
+pub const PRIMARY_KEY: fn() -> PrimaryKey = || PrimaryKey {};
